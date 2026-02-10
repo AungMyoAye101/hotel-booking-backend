@@ -6,7 +6,11 @@ export const createPaymentSchema = z.object({
     userId: z.string("User  id is required."),
     paymentMethod: z.enum(["MOBILE_BANKING", "CARD", "BANK"],
         "Payment method must be one of Mobile banking ,card or bank."),
-    amount: z.number().positive()
+    amount: z.number().positive(),
+    payNow: z.boolean().optional()
+}).refine((data) => data.payNow === true, {
+    message: "Pay now is required.",
+    path: ['payNow']
 })
 
 export const updatePaymnetSchema = z.object({

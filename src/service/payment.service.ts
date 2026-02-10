@@ -7,40 +7,55 @@ import Receipt from "../models/receipt.model";
 import { Request } from "express";
 import { paginationResponseFormater } from "../utils/paginationResponse";
 import Booking from "../models/booking.model";
+import { resend, sendPaymentEmail } from "../utils/resend";
+
+
 //create
 export const createPaymentService = async (
     data: createPaymentType
 ) => {
 
     const [userId, bookingId] = checkMongoDbId([data.userId, data.bookingId])
+    console.log(userId, bookingId, "userId, bookingId")
+    console.log(data, "data")
 
     const session = await mongoose.startSession();
-    session.startTransaction();
     try {
-        const payment = await Payment.create({
+        session.startTransaction();
+        const payment = await Payment.create([{
             userId,
             bookingId,
             paymentMethod: data.paymentMethod,
             amount: data.amount,
-            status: "PENDING"
-        })
-        if (!payment) {
+            status: data.payNow ? "PAID" : "PENDING",
+        }], { session })
+        if (!payment[0]) {
             throw new BadRequestError("Failed to create payment.")
         }
 
-        const receipt = await Receipt.create({
+        const booking = await Booking.findByIdAndUpdate(bookingId, {
+            status: "CONFIRMED"
+        }, { new: true, session })
+        if (!booking) {
+            throw new NotFoundError("Booking not found.")
+        }
+        const receipt = await Receipt.create([{
             receiptNo: "REC-" + Date.now(),
             userId,
-            paymentId: payment._id,
+            paymentId: payment[0]._id,
             bookingId,
-            paymentMethod: payment.paymentMethod,
-            status: payment.status,
-            amount: payment.amount,
-            paidAt: payment.paidAt,
+            paymentMethod: payment[0].paymentMethod,
+            status: payment[0].status,
+            amount: payment[0].amount,
+            paidAt: payment[0].paidAt,
 
-        })
+        }], { session })
+
+
         await session.commitTransaction();
-        return payment;
+        await sendPaymentEmail(booking.email as string, "Payment successful", "Payment successful", payment[0]);
+
+        return payment[0];
 
     } catch (error) {
 

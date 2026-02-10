@@ -29,7 +29,7 @@ export const verifyAccessToken = (
 export const generateRefreshToken = (
     payload: TokenPayload
 ) => {
-    return jwt.sign(payload, REFRESH_TOKEN, { expiresIn: access_token_expire })
+    return jwt.sign(payload, REFRESH_TOKEN, { expiresIn: "7days" })
 }
 
 export const verifyRefreshToken = async (

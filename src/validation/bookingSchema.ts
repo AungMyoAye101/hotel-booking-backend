@@ -34,9 +34,12 @@ export const bookingSchema = z.object({
     quantity: z.
         number("Quantity is required,")
         .positive(),
+    guest: z
+        .number("Guest is required")
+        .positive(),
     status: z
-        .enum(["PENDING", "CONFIRMED", "STAYED", "CANCELLED", "EXPIRED"])
-        .default("PENDING")
+        .enum(["DRAFT", "PENDING", "CONFIRMED", "STAYED", "CANCELLED", "EXPIRED"])
+        .default("DRAFT")
         .optional(),
     checkIn: z
         .coerce.date().refine((date) => {
@@ -51,6 +54,26 @@ export const bookingSchema = z.object({
 })
 
 export const updateBookingSchema = z.object({
+    name: z
+        .string()
+        .min(3, "Name must be contain 3 characters.")
+        .optional(),
+    email: z
+        .email("Inavlid email")
+        .transform(v => v.toLocaleLowerCase())
+        .optional(),
+    city: z
+        .string()
+        .min(1, "City is required.")
+        .optional(),
+    country: z
+        .string()
+        .min(1, "Country is required.")
+        .optional(),
+    phone: z
+        .string()
+        .regex(/^\+?[1-9]\d{7,14}$/, "Invalid phone number")
+        .optional(),
     status: z.enum(["PENDING", "CONFIRMED", "STAYED", "CANCELLED", "EXPIRED"]).default("PENDING"),
 })
 

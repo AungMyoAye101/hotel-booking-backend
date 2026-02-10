@@ -11,7 +11,8 @@ export interface IBooking extends Document {
     phone: string,
     totalPrice: number,
     quantty: number,
-    status: "PENDING" | "CONFIRMED" | "STAYED" | "CANCELLED" | "EXPIRED",
+    guest: number,
+    status: "DRAFT" | "PENDING" | "CONFIRMED" | "STAYED" | "CANCELLED" | "EXPIRED",
     checkIn: Date,
     checkOut: Date
 }
@@ -33,11 +34,11 @@ const bookingSchema = new mongoose.Schema({
     },
     name: {
         type: String,
-        required: true,
+
     },
     email: {
         type: String,
-        required: true,
+
 
 
     },
@@ -63,9 +64,13 @@ const bookingSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    guest: {
+        type: Number,
+        required: true
+    },
     status: {
         type: String,
-        enum: ["PENDING", "CONFIRMED", "STAYED", "CANCELLED", "EXPIRED"]
+        enum: ["DRAFT", "PENDING", "CONFIRMED", "STAYED", "CANCELLED", "EXPIRED"]
     },
     totalPrice: {
         type: Number,

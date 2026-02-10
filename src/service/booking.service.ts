@@ -10,6 +10,7 @@ import mongoose from "mongoose";
 export const createBookingService = async (
     data: bookingType
 ) => {
+    console.log(data, "data")
     const [roomId] = checkMongoDbId([data.roomId]);
 
 
@@ -34,15 +35,17 @@ export const createBookingService = async (
             }
         ]).session(session);
 
-
+        console.log(booked, "booked")
         const bookedCount = booked.length > 0 ? booked[0].bookedCount : 0;
+        console.log(bookedCount, "bookedCount")
 
         const room = await Room.findById(data.roomId).session(session) as IRoom;
-
+        console.log(room, "room")
         if (room.totalRooms - bookedCount < data.quantity) {
             throw new BadRequestError("Not enoungh room .");
         }
         const booking = await Booking.create([data], { session });
+        console.log(booking, "booking")
 
         if (booking.length === 0) {
             throw new BadRequestError("Failed to create booking")
@@ -156,7 +159,7 @@ export const getALlBookingsService = async (req: Request) => {
 }
 
 export const getBookingById = async (id: string) => {
-    console.log(id)
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new BadRequestError("Invalid booking id")
     }
@@ -227,10 +230,14 @@ export const getBookingById = async (id: string) => {
                 checkIn: 1,
                 checkOut: 1,
                 quantity: 1,
+                guest: 1,
                 totalPrice: 1,
                 status: 1,
                 name: 1,
                 email: 1,
+                phone: 1,
+                city: 1,
+                country: 1,
 
                 hotel: {
                     name: "$hotel.name",
@@ -257,7 +264,7 @@ export const getBookingById = async (id: string) => {
 
 
     ]);
-    console.log(booking, "bkk")
+
     if (booking && booking.length === 0) {
         throw new NotFoundError("Booking not found")
     }

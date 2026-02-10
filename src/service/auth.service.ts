@@ -82,7 +82,7 @@ export const refreshService = async (
     req: Request
 ) => {
     const token = req.cookies.refresh_token
-
+    console.log(token, "toekn")
 
     if (!token) {
         throw new BadRequestError("Token is required.")
@@ -120,7 +120,7 @@ export const refreshService = async (
 
 export const currentUserService = async (req: Request) => {
     const token = req.cookies.refresh_token;
-    console.log(token)
+
     if (!token) {
         throw new BadRequestError("Token is required.")
     }

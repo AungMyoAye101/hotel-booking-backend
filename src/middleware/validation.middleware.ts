@@ -57,7 +57,7 @@ export const checkMongoDBId = (ids: string[]) => {
 
             const mongoId = req.params[id];
 
-            if (!mongoose.Types.ObjectId.isValid(mongoId)) {
+            if (!mongoose.Types.ObjectId.isValid(mongoId as string)) {
                 throw new ValidationError([{
                     "message": "Invalid mongoId error.",
                     "path": `Mogodb Id ${mongoId}`,
