@@ -16,8 +16,7 @@ export const createPaymentService = async (
 ) => {
 
     const [userId, bookingId] = checkMongoDbId([data.userId, data.bookingId])
-    console.log(userId, bookingId, "userId, bookingId")
-    console.log(data, "data")
+
 
     const session = await mongoose.startSession();
     try {
@@ -59,14 +58,14 @@ export const createPaymentService = async (
 
     } catch (error) {
 
-        session.abortTransaction();
+        await session.abortTransaction();
         console.warn(error);
         if (error instanceof Error) {
             throw new BadRequestError(error.message)
         }
 
     } finally {
-        session.endSession()
+        await session.endSession()
 
     }
 

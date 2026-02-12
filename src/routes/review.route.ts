@@ -5,7 +5,7 @@ import { createReviewController, getReviewByHotelIDController, updateReviewContr
 import { isAuthenticated } from "../middleware/isAuthenticated";
 import { createReviewSchema, updateReviewSchema } from "../validation/reviewSchema";
 
-const router = Router();
+const router: Router = Router();
 
 router.get(
     "/:hotelId",

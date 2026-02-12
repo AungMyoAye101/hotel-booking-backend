@@ -4,7 +4,7 @@ export interface IReview extends Document {
     userId: string,
     hotelId: string,
     review: string,
-    ratings: number
+    rating: number
 }
 const reviewSchema = new mongoose.Schema(
     {
@@ -23,7 +23,7 @@ const reviewSchema = new mongoose.Schema(
             requrie: true,
 
         },
-        ratings: {
+        rating: {
             type: Number,
             min: 1,
             max: 9

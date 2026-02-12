@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import { successResponse } from "../common/successResponse";
 import { createHotelService, deleteHotelService, getAllHotelsService, getHotelByIdService, getHotelByTypesService, updateHotelService } from "../service/hotel.service";
 import { asyncCatchFn } from "../utils/asyncFunction";
@@ -92,7 +92,7 @@ export const getAllHotelController = async (
         return next(error);
     }
 }
-export const getHotelByTypesController = asyncCatchFn(
+export const getHotelByTypesController: RequestHandler = asyncCatchFn(
     async (req: Request, res: Response) => {
         const hotel = await getHotelByTypesService();
 

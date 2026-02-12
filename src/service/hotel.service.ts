@@ -89,17 +89,16 @@ export const getAllHotelsService = async (
     const ratingOrderExplicit = req.query.ratingOrder !== undefined;
     const priceOrderExplicit = req.query.priceOrder !== undefined;
 
-    // Priority: If ratingOrder is explicitly provided, it takes precedence
-    // Otherwise, use priceOrder if explicitly provided
+
     if (ratingOrderExplicit) {
-        // Rating is primary sort when explicitly provided
+
         sortArray.push(['rating', ratingOrder === "asc" ? 1 : -1]);
-        // Add price as secondary sort only if it was also explicitly provided
+
         if (priceOrderExplicit) {
             sortArray.push(['price', priceOrder === "asc" ? 1 : -1]);
         }
     } else if (priceOrderExplicit) {
-        // Price is primary sort when ratingOrder not explicitly provided
+
         sortArray.push(['price', priceOrder === "asc" ? 1 : -1]);
     } else {
         // Both use defaults: sort by rating (desc) first, then price (asc)
@@ -117,7 +116,10 @@ export const getAllHotelsService = async (
         ).sort(sortArray.length > 0 ? sortArray : {})
             .skip(skip)
             .limit(limit)
-            .populate("photo")
+            .populate({
+                path: "photo",
+                select: 'secure_url'
+            })
             .lean(),
         await Hotel.countDocuments(filter)
     ])
@@ -141,6 +143,20 @@ export const getHotelByTypesService = async () => {
             $group: {
                 _id: "$type",
                 count: { $sum: 1 }
+            }
+        },
+        {
+            $lookup: {
+                from: "image",
+                localField: "photoId",
+                foreignField: "_id",
+                as: "photo"
+            }
+        },
+        {
+            $unwind: {
+                path: "photo",
+                preserveNullAndEmptyArrays: true
             }
         },
         {

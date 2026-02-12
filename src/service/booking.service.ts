@@ -1,16 +1,17 @@
 import { Request } from "express";
-import { bookingType, updateBookingType } from "../validation/bookingSchema";
+import { bookingSchema, bookingType, updateBookingType } from "../validation/bookingSchema";
 import Booking from "../models/booking.model";
 import Room, { IRoom } from "../models/room.model";
 import { BadRequestError, NotFoundError } from "../common/errors";
 import { checkMongoDbId } from "../utils/checkMongoDbId";
 import { paginationResponseFormater } from "../utils/paginationResponse";
 import mongoose from "mongoose";
+import Payment from "../models/payment.model";
 
 export const createBookingService = async (
     data: bookingType
 ) => {
-    console.log(data, "data")
+
     const [roomId] = checkMongoDbId([data.roomId]);
 
 
@@ -35,17 +36,17 @@ export const createBookingService = async (
             }
         ]).session(session);
 
-        console.log(booked, "booked")
+
         const bookedCount = booked.length > 0 ? booked[0].bookedCount : 0;
-        console.log(bookedCount, "bookedCount")
+
 
         const room = await Room.findById(data.roomId).session(session) as IRoom;
-        console.log(room, "room")
+
         if (room.totalRooms - bookedCount < data.quantity) {
             throw new BadRequestError("Not enoungh room .");
         }
         const booking = await Booking.create([data], { session });
-        console.log(booking, "booking")
+
 
         if (booking.length === 0) {
             throw new BadRequestError("Failed to create booking")
@@ -270,4 +271,160 @@ export const getBookingById = async (id: string) => {
     }
 
     return booking[0];
+}
+
+export const getBookingByUserIdService = async (userId: string) => {
+    const booking = await Booking.aggregate([
+        {
+            $match: {
+                userId: new mongoose.Types.ObjectId(userId)
+            }
+        },
+        // user
+        {
+            $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: '_id',
+                as: "user"
+
+            }
+        },
+        {
+            $unwind: "$user"
+        },
+        // hotel 
+        {
+            $lookup: {
+                from: "hotels",
+                localField: "hotelId",
+                foreignField: '_id',
+                as: "hotel"
+
+            }
+        },
+        {
+            $unwind: "$hotel"
+        },
+        //room
+        {
+            $lookup: {
+                from: "rooms",
+                localField: "roomId",
+                foreignField: '_id',
+                as: "room"
+
+            }
+        },
+        {
+            $unwind: "$room"
+        },
+        {
+            $lookup: {
+                from: "images",
+                localField: "hotel.photo",
+                foreignField: '_id',
+                as: "photo"
+
+            }
+        },
+        {
+            $unwind: {
+                path: '$photo',
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                checkIn: 1,
+                checkOut: 1,
+                quantity: 1,
+                guest: 1,
+                totalPrice: 1,
+                status: 1,
+                name: 1,
+                email: 1,
+                phone: 1,
+                city: 1,
+                country: 1,
+
+                hotel: {
+                    name: "$hotel.name",
+                    adddress: "$hotel.address",
+                    city: "$hotel.city",
+                    rating: "$hotel.rating",
+                    star: "$hotel.star",
+                    photo: "$photo.secure_url"
+                },
+                room: {
+                    name: "$room.name",
+                    price: "$room.price",
+                    bedType: "$room.bedTypes"
+                },
+                user: {
+                    _id: '$user._id',
+                    name: "$user.name",
+
+                }
+
+
+            }
+        }
+
+
+    ]);
+
+    if (booking && booking.length === 0) {
+        throw new NotFoundError("Booking not found")
+    }
+    // const booking = await Booking.find({ userId })
+    //     .populate([
+    //         { path: "roomId", select: "_id name price bedTypes" },
+    //         { path: "hotelId", select: "_id name address city rating star photo" },
+    //         { path: "userId", select: "_id name" },
+    //     ])
+    //     .lean();
+    // if (!booking || booking.length === 0) {
+    //     throw new NotFoundError("Booking not found")
+    // }
+    return booking;
+}
+
+export const canecelBookingService = async (bookingId: string) => {
+
+    const session = await mongoose.startSession()
+    try {
+        session.startTransaction();
+        const booking = await Booking.findById(bookingId).session(session)
+        if (!booking) {
+            throw new NotFoundError("Booking not found")
+        }
+        booking.status = "CANCELLED";
+        const payment = await Payment.findByIdAndUpdate({
+            bookingId: booking._id
+        },
+            {
+                status: "FAILED"
+            },
+            {
+                new: true,
+                session
+            }
+        )
+
+
+        if (!payment) {
+            throw new NotFoundError("Payment not found")
+        }
+
+        await booking.save({ session });
+        await session.commitTransaction()
+        return booking;
+    } catch (error) {
+        await session.abortTransaction()
+    } finally {
+        await session.endSession()
+    }
+
 }

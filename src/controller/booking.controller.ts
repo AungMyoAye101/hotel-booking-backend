@@ -1,7 +1,7 @@
 import { Request, RequestHandler, Response } from "express";
 import { asyncCatchFn } from "../utils/asyncFunction";
 import { successResponse } from "../common/successResponse";
-import { createBookingService, getAllBookingByRoomIdService, getALlBookingsService, getBookingById, updateBookingService } from "../service/booking.service";
+import { canecelBookingService, createBookingService, getAllBookingByRoomIdService, getALlBookingsService, getBookingById, getBookingByUserIdService, updateBookingService } from "../service/booking.service";
 
 export const createBookingController: RequestHandler = asyncCatchFn(
     async (
@@ -73,6 +73,37 @@ export const getBookingByIdController: RequestHandler = asyncCatchFn(
             res,
             200,
             "Get  booking success.",
+            { booking }
+        )
+    }
+)
+
+
+export const getBookingByUserIdController: RequestHandler = asyncCatchFn(
+    async (
+        req: Request,
+        res: Response
+    ) => {
+        const booking = await getBookingByUserIdService(req.validatedParams.userId);
+        successResponse(
+            res,
+            200,
+            "Get booking by user id success.",
+            { booking }
+        )
+    }
+)
+
+export const cancelBookingController: RequestHandler = asyncCatchFn(
+    async (
+        req: Request,
+        res: Response
+    ) => {
+        const booking = await canecelBookingService(req.validatedParams.id);
+        successResponse(
+            res,
+            200,
+            "Booking cancelled.",
             { booking }
         )
     }

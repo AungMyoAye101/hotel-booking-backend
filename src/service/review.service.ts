@@ -9,7 +9,8 @@ export const createReviewService = async (
     data: createReviewType
 ) => {
     const [userId, hotelId] = checkMongoDbId([data.userId, data.hotelId]);
-    console.log(userId, hotelId);
+    console.log(data, "data")
+
     const review = await Review.create(data);
     if (!review) {
         throw new BadRequestError("Failed to create review")
@@ -34,7 +35,15 @@ export const getReviewsByhotelIDService = async (
     const { hotelId } = req.validatedParams;
     const { page = 1, limit = 10 } = req.validatedQuery;
     const skip = (page - 1) * limit;
-    const reviews = await Review.find({ hotelId }).sort({ createdAt: -1 }).skip(skip).limit(limit).lean();
+    const reviews = await Review.find({ hotelId })
+        .populate({
+            path: "userId",
+            select: "name"
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
     if (!reviews) {
         throw new NotFoundError("Reviews not found.")
     }
