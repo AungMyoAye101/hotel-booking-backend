@@ -5,7 +5,7 @@ import { hotelImageUpdateController, hotelImageUploadController, roomImageUpdate
 import { hasRole } from "../middleware/isAuthenticated";
 
 
-const router = Router();
+const router: Router = Router();
 
 router.post(
     '/upload/hotel/:hotelId',

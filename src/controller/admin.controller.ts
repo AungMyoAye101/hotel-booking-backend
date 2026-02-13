@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import { successResponse } from "../common/successResponse";
 import { adminLoginService, adminLogoutService, adminRefreshService, adminRegisterService } from "../service/auth.admin.service";
 import { genterateCookie } from "../common/generateCookie";
@@ -89,7 +89,7 @@ export const refrehTokenController = async (
     }
 }
 
-export const adminMeController = asyncCatchFn(
+export const adminMeController: RequestHandler = asyncCatchFn(
     async (req: Request, res: Response) => {
         console.log(req.user);
         const user = await Admin.findById(req.user.id).select("-password -token");

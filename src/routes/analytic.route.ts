@@ -2,7 +2,7 @@ import { Router } from "express";
 import { getTotalBookingController, getTotalController, getTotalRevenueController } from "../controller/analytic.controller";
 import { hasRole } from "../middleware/isAuthenticated";
 
-const router = Router();
+const router: Router = Router();
 
 router.get(
     '/dashboard/revenue',

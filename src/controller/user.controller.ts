@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, RequestHandler, Response } from "express";
 import { successResponse } from "../common/successResponse";
 import { asyncCatchFn } from "../utils/asyncFunction";
 import {
@@ -8,7 +8,7 @@ import {
 } from "../service/user.service";
 import { currentUserService } from "../service/auth.service";
 
-export const getAllUsersController =
+export const getAllUsersController: RequestHandler =
     asyncCatchFn(async (
         req: Request,
         res: Response,
@@ -21,7 +21,7 @@ export const getAllUsersController =
             data
         )
     });
-export const getUserByIdController =
+export const getUserByIdController: RequestHandler =
     asyncCatchFn(async (
         req: Request,
         res: Response,
@@ -34,7 +34,7 @@ export const getUserByIdController =
             { user }
         )
     });
-export const updateUserController =
+export const updateUserController: RequestHandler =
     asyncCatchFn(async (
         req: Request,
         res: Response,
@@ -48,7 +48,7 @@ export const updateUserController =
         )
     });
 
-export const getCurrentUserController =
+export const getCurrentUserController: RequestHandler =
     asyncCatchFn(async (
         req: Request,
         res: Response,

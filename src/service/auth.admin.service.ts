@@ -19,12 +19,12 @@ export const adminRegisterService = async (
         password: hashedPassword
     });
     const access_token = generateAccessToken({
-        id: user._id as string,
+        id: user._id.toString(),
         email: user.email,
         role: "admin"
     })
     const refresh_token = generateRefreshToken({
-        id: user._id as string,
+        id: user._id.toString(),
         email: user.email,
         role: "admin"
     })
@@ -50,12 +50,12 @@ export const adminLoginService = async (
         throw new BadRequestError("Invalid email or password,")
     }
     const access_token = generateAccessToken({
-        id: user._id as string,
+        id: user._id.toString(),
         email: user.email,
         role: user.role,
     })
     const refresh_token = generateRefreshToken({
-        id: user._id as string,
+        id: user._id.toString(),
         email: user.email,
         role: user.role,
     })
@@ -91,13 +91,13 @@ export const adminRefreshService = async (
         throw new UnAuthorizedError("Admin not found.")
     }
     const access_token = generateAccessToken({
-        id: user._id as string,
+        id: user._id.toString(),
         email: user.email,
         role: user.role,
 
     })
     const refresh_token = generateRefreshToken({
-        id: user._id as string,
+        id: user._id.toString(),
         email: user.email,
         role: user.role,
 

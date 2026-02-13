@@ -1,9 +1,9 @@
-import { Request, Response } from "express";
+import { Request, RequestHandler, Response } from "express";
 import { asyncCatchFn } from "../utils/asyncFunction";
 import { createReviewService, getReviewsByhotelIDService, updateReviewService } from "../service/review.service";
 import { successResponse } from "../common/successResponse";
 
-export const createReviewController = asyncCatchFn(
+export const createReviewController: RequestHandler = asyncCatchFn(
     async (req, res) => {
         const data = await createReviewService(req.validatedBody)
         successResponse(
@@ -14,7 +14,7 @@ export const createReviewController = asyncCatchFn(
         )
     }
 )
-export const updateReviewController = asyncCatchFn(
+export const updateReviewController: RequestHandler = asyncCatchFn(
     async (req, res) => {
         const data = await updateReviewService(req.validatedParams.id, req.validatedBody)
         successResponse(
@@ -25,7 +25,7 @@ export const updateReviewController = asyncCatchFn(
         )
     }
 )
-export const getReviewByHotelIDController = asyncCatchFn(
+export const getReviewByHotelIDController: RequestHandler = asyncCatchFn(
     async (req, res) => {
         const data = await getReviewsByhotelIDService(req)
         successResponse(

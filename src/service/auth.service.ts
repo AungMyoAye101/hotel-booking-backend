@@ -20,11 +20,11 @@ export const registerService = async (
         password: hashed
     })
     const access_token = await generateAccessToken({
-        id: user._id as string
+        id: user._id.toString()
         , email: user.email,
     })
     const refresh_token = await generateRefreshToken({
-        id: user._id as string
+        id: user._id.toString()
         , email: user.email,
     })
 
@@ -53,8 +53,8 @@ export const loginService = async (
     if (!isMatch) {
         throw new BadRequestError("Invalid credential");
     }
-    const access_token = await generateAccessToken({ id: user._id as string, email: user.email, })
-    const refresh_token = await generateRefreshToken({ id: user._id as string, email: user.email, })
+    const access_token = await generateAccessToken({ id: user._id.toString(), email: user.email, })
+    const refresh_token = await generateRefreshToken({ id: user._id.toString(), email: user.email, })
 
     user.token = refresh_token;
     await user.save();
@@ -98,12 +98,12 @@ export const refreshService = async (
         throw new NotFoundError("User not found.")
     }
     const access_token = generateAccessToken({
-        id: user._id as string,
+        id: user._id.toString(),
         email: user.email,
 
     })
     const refresh_token = generateRefreshToken({
-        id: user._id as string,
+        id: user._id.toString(),
         email: user.email,
 
     })

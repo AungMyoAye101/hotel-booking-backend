@@ -5,13 +5,13 @@ import { adminLoginController, adminLogoutController, adminMeController, adminRe
 import { isAuthenticated } from "../middleware/isAuthenticated";
 
 
-const router = Router();
+const router: Router = Router();
 
 
 router.post("/register", validateRequestBody(registerSchema), adminRegisterController);
 router.post("/login", validateRequestBody(loginSchema), adminLoginController);
 router.post("/logout", isAuthenticated, adminLogoutController);
 router.post('/refresh', refrehTokenController)
-router.get('/me',isAuthenticated,adminMeController)
+router.get('/me', isAuthenticated, adminMeController)
 
 export default router;

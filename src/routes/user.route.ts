@@ -4,7 +4,7 @@ import { paginationSchmea } from "../validation/pagination";
 import { getAllUsersController, getCurrentUserController, getUserByIdController, updateUserController } from "../controller/user.controller";
 import { userQuerySchema, userSchmea } from "../validation/userSchmea";
 
-const router = Router();
+const router: Router = Router();
 
 router.get(
     "/",

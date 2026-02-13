@@ -1,9 +1,9 @@
-import { Request, Response } from "express";
+import { Request, RequestHandler, Response } from "express";
 import { asyncCatchFn } from "../utils/asyncFunction";
 import { successResponse } from "../common/successResponse";
 import { getALlReceiptByUserIdService, getALlReceiptService } from "../service/receipt.service";
 
-export const getAllReceiptController = asyncCatchFn(
+export const getAllReceiptController: RequestHandler = asyncCatchFn(
     async (req: Request, res: Response) => {
         const data = await getALlReceiptService(req);
         successResponse(
@@ -14,7 +14,7 @@ export const getAllReceiptController = asyncCatchFn(
         )
     }
 )
-export const getAllReceiptByUserIdController = asyncCatchFn(
+export const getAllReceiptByUserIdController: RequestHandler = asyncCatchFn(
     async (req: Request, res: Response) => {
         const data = await getALlReceiptByUserIdService(req);
         successResponse(

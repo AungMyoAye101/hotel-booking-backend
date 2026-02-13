@@ -5,7 +5,6 @@ import cors from "cors";
 import { v2 as cloudinary } from "cloudinary";
 import { limiter } from "./utils/limiter";
 import { errorHandler } from "./middleware/errorHandler.middleware";
-//routers 
 import adminRouter from "./routes/admin.auth.route";
 import authRouter from "./routes/auth.route";
 import userRouter from "./routes/user.route";
@@ -20,16 +19,17 @@ import analyticRouter from "./routes/analytic.route";
 import { isAuthenticated } from "./middleware/isAuthenticated";
 import { customLogger } from "./middleware/customLogger";
 
-
-const app = express();
-
 dotenv.config();
+
+const app: express.Express = express();
+
 const allow_origin = process.env.ORIGIN_URL as string;
 const allowedOrigins = [
     allow_origin,
     "http://localhost:5173",
     "http://localhost:3000",
     "https://booking-dashboard-one.vercel.app",
+    "https://booking-seven-delta.vercel.app"
 ];
 
 app.use(
