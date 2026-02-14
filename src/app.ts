@@ -16,6 +16,7 @@ import imageRouter from "./routes/image.route";
 import paymentRouter from "./routes/payment.route";
 import receiptRouter from "./routes/receipt.route";
 import analyticRouter from "./routes/analytic.route";
+import cleanupRouter from "./routes/cleanup.route";
 import { isAuthenticated } from "./middleware/isAuthenticated";
 import { customLogger } from "./middleware/customLogger";
 
@@ -78,6 +79,7 @@ app.use("/api/v1/booking", isAuthenticated, bookingRouter);
 app.use("/api/v1/payment", isAuthenticated, paymentRouter);
 app.use("/api/v1/receipt", isAuthenticated, receiptRouter);
 app.use("/api/v1/room", roomRouter);
+app.use('/api/v1/auto', cleanupRouter)
 
 //error handler middleware.
 app.use(errorHandler);

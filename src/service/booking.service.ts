@@ -45,7 +45,15 @@ export const createBookingService = async (
         if (room.totalRooms - bookedCount < data.quantity) {
             throw new BadRequestError("Not enoungh room .");
         }
-        const booking = await Booking.create([data], { session });
+
+        // totalPrice = room price × nights × quantity × (1 + 5% service fee)
+        const checkInDate = new Date(data.checkIn);
+        const checkOutDate = new Date(data.checkOut);
+        const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+        const subtotal = room.price * nights * data.quantity;
+        const totalPrice = Math.round((subtotal * 1.05) * 100) / 100;
+
+        const booking = await Booking.create([{ ...data, totalPrice }], { session });
 
 
         if (booking.length === 0) {

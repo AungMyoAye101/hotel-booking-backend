@@ -29,8 +29,9 @@ export const bookingSchema = z.object({
         .regex(/^\+?[1-9]\d{7,14}$/, "Invalid phone number")
         .optional(),
     totalPrice: z
-        .number("Total price is required")
-        .positive(),
+        .number("Total price must be a number")
+        .positive()
+        .optional(),
     quantity: z.
         number("Quantity is required,")
         .positive(),
