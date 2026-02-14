@@ -4,7 +4,7 @@ export interface IPaymentType extends Document {
     bookingId: Types.ObjectId,
     userId: Types.ObjectId,
     paymentMethod: "MOBILE_BANKING" | "CARD" | "BANK",
-    status: "PENDING" | "PAID" | "FAILED",
+    status: "PENDING" | "PAID" | "FAILED" | "REFUNDED",
     amount: number,
     paidAt: Date
 }
@@ -28,7 +28,7 @@ const paymentSchmea = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["PENDING", "PAID", "FAILED"],
+        enum: ["PENDING", "PAID", "FAILED", "REFUNDED"],
         required: true,
         default: "PENDING"
     },

@@ -64,11 +64,11 @@ export const createBookingService = async (
         return booking[0];
 
     } catch (error) {
-        session.abortTransaction();
+        await session.abortTransaction();
 
         throw error;
     } finally {
-        session.endSession()
+        await session.endSession()
     }
 
 
@@ -404,21 +404,18 @@ export const canecelBookingService = async (bookingId: string) => {
     const session = await mongoose.startSession()
     try {
         session.startTransaction();
-        const booking = await Booking.findById(bookingId).session(session)
+        const booking = await Booking.findByIdAndUpdate(bookingId, {
+            status: "CANCELLED"
+        }, { new: true, session })
+
         if (!booking) {
             throw new NotFoundError("Booking not found")
         }
-        booking.status = "CANCELLED";
-        const payment = await Payment.findByIdAndUpdate({
-            bookingId: booking._id
-        },
-            {
-                status: "FAILED"
-            },
-            {
-                new: true,
-                session
-            }
+
+        const payment = await Payment.findOneAndUpdate(
+            { bookingId },
+            { status: "REFUNDED" },
+            { new: true, session }
         )
 
 
@@ -426,11 +423,14 @@ export const canecelBookingService = async (bookingId: string) => {
             throw new NotFoundError("Payment not found")
         }
 
-        await booking.save({ session });
+
         await session.commitTransaction()
+
         return booking;
     } catch (error) {
+        console.log(error)
         await session.abortTransaction()
+        throw error;
     } finally {
         await session.endSession()
     }
