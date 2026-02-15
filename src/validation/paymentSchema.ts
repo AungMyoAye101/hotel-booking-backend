@@ -8,9 +8,6 @@ export const createPaymentSchema = z.object({
         "Payment method must be one of Mobile banking ,card or bank."),
     amount: z.number().positive(),
     payNow: z.boolean().optional()
-}).refine((data) => data.payNow === true, {
-    message: "Pay now is required.",
-    path: ['payNow']
 })
 
 export const updatePaymnetSchema = z.object({

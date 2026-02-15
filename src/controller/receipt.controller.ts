@@ -21,7 +21,7 @@ export const getAllReceiptByUserIdController: RequestHandler = asyncCatchFn(
             res,
             200,
             "Get All receipt by user id.",
-            { data }
+            data
         )
     }
 )

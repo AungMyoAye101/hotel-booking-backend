@@ -259,7 +259,7 @@ export const getBookingById = async (id: string) => {
                 room: {
                     name: "$room.name",
                     price: "$room.price",
-                    bedType: "$room.bedTypes"
+                    bedTypes: "$room.bedTypes"
                 },
                 user: {
                     _id: '$user._id',
@@ -368,7 +368,7 @@ export const getBookingByUserIdService = async (userId: string) => {
                 room: {
                     name: "$room.name",
                     price: "$room.price",
-                    bedType: "$room.bedTypes"
+                    bedTypes: "$room.bedTypes"
                 },
                 user: {
                     _id: '$user._id',
@@ -386,16 +386,7 @@ export const getBookingByUserIdService = async (userId: string) => {
     if (booking && booking.length === 0) {
         throw new NotFoundError("Booking not found")
     }
-    // const booking = await Booking.find({ userId })
-    //     .populate([
-    //         { path: "roomId", select: "_id name price bedTypes" },
-    //         { path: "hotelId", select: "_id name address city rating star photo" },
-    //         { path: "userId", select: "_id name" },
-    //     ])
-    //     .lean();
-    // if (!booking || booking.length === 0) {
-    //     throw new NotFoundError("Booking not found")
-    // }
+
     return booking;
 }
 

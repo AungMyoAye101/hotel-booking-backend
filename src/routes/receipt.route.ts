@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { checkMongoDBId, validateRequestBody, validateRequestQuery } from "../middleware/validation.middleware";
+import { checkMongoDBId, validateRequestQuery } from "../middleware/validation.middleware";
 import { paginationSchmea } from "../validation/pagination";
 import { getAllReceiptByUserIdController, getAllReceiptController } from "../controller/receipt.controller";
 
@@ -13,7 +13,7 @@ router.get(
 
 router.get(
     "/:userId",
-    checkMongoDBId(['userId']),
+    checkMongoDBId(["userId"]),
     validateRequestQuery(paginationSchmea),
     getAllReceiptByUserIdController
 )
