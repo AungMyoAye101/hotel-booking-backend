@@ -17,6 +17,7 @@ export const uploadHotelImgService = async (
         }]);
     }
     const file = req.file;
+    console.log(file)
     const { hotelId } = req.validatedParams
     //upload img to cloudinary 
     let uploaded;
@@ -29,7 +30,7 @@ export const uploadHotelImgService = async (
                 folder: "Booking",
                 resource_type: "image"
             });
-
+        console.log("uploading...")
         if (!uploaded) {
             throw new BadRequestError("Failed to upload image to cloudinary.")
         }
@@ -45,8 +46,10 @@ export const uploadHotelImgService = async (
             secure_url: uploaded.secure_url,
             public_id: uploaded.public_id,
         }], { session });
+        console.log("uploaded")
 
         hotel.photo = image[0]._id as mongoose.Types.ObjectId;
+
         await hotel.save({ session });
         await session.commitTransaction();
         return hotel;
@@ -118,7 +121,7 @@ export const updateHotelImgService = async (
         }
         throw error;
     } finally {
-        session.endSession();
+        await session.endSession();
         await fs.unlink(file.path)
     }
 }
@@ -168,17 +171,17 @@ export const uploadRoomImgService = async (
 
         await room.save({ session })
 
-        session.commitTransaction()
+        await session.commitTransaction()
         return room;
 
     } catch (error) {
-        session.abortTransaction();
+        await session.abortTransaction();
         if (uploaded?.public_id) {
             await cloudinary.uploader.destroy(uploaded.public_id)
             throw error;
         }
     } finally {
-        session.endSession();
+        await session.endSession();
         fs.unlink(file.path)
     }
 
@@ -227,17 +230,17 @@ export const updateRoomImgService = async (
 
         await image.save({ session });
         await cloudinary.uploader.destroy(oldPhotoId);
-        session.commitTransaction();
+        await session.commitTransaction();
         return room;
 
     } catch (error) {
-        session.abortTransaction();
+        await session.abortTransaction();
         if (uploaded?.public_id) {
             await cloudinary.uploader.destroy(uploaded?.public_id)
         }
         throw error;
     } finally {
-        session.endSession();
+        await session.endSession();
         await fs.unlink(file.path)
     }
 }
