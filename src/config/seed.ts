@@ -1,3 +1,7 @@
+import dotenv from "dotenv";
+import path from "path";
+import fs from "fs/promises";
+import { v2 as cloudinary } from "cloudinary";
 import { faker } from "@faker-js/faker";
 import { connectToDb } from "../utils/connectToDb";
 import User from "../models/user.model";
@@ -9,11 +13,53 @@ import Booking from "../models/booking.model";
 import Payment from "../models/payment.model";
 import Review from "../models/review.model";
 import Receipt from "../models/receipt.model";
+import Image from "../models/image.model";
+
+dotenv.config();
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const IMAGES_BASE = path.join(__dirname, "images");
+
+const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
+
+/** Get sorted list of local image file paths from a directory (e.g. hotels or rooms). */
+const getLocalImagePaths = async (subdir: "hotels" | "rooms"): Promise<string[]> => {
+    const dir = path.join(IMAGES_BASE, subdir);
+    try {
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+        const files = entries
+            .filter((e) => e.isFile() && IMAGE_EXTENSIONS.includes(path.extname(e.name).toLowerCase()))
+            .map((e) => path.join(dir, e.name))
+            .sort();
+        return files;
+    } catch (err) {
+        return [];
+    }
+};
+
+
+/** Upload a local image file to Cloudinary and return secure_url + public_id */
+const uploadLocalImageToCloudinary = async (
+    filePath: string,
+    folder = "Booking"
+): Promise<{ secure_url: string; public_id: string }> => {
+    const result = await cloudinary.uploader.upload(filePath, {
+        folder,
+        resource_type: "image",
+    });
+    if (!result?.secure_url || !result?.public_id) {
+        throw new Error(`Cloudinary upload failed for ${filePath}`);
+    }
+    return { secure_url: result.secure_url, public_id: result.public_id };
+};
 
 const seed = async () => {
     await connectToDb();
 
-    //   const images = await seedImage();
     const users = await seedUser();
     await seedAdmin();
     const hotels = await seedHotel();
@@ -28,16 +74,16 @@ const seed = async () => {
 };
 
 // const seedImage = async () => {
-//   await Image.deleteMany();
-//   console.log("Deleting images...");
-//   const count = 30;
-//   const images = Array.from({ length: count }, (_, i) => ({
-//     secure_url: `https://picsum.photos/seed/hotel-${i}/400/300`,
-//     public_id: `seed/hotel-${i}-${faker.string.alphanumeric(8)}`,
-//   }));
-//   const inserted = await Image.insertMany(images);
-//   console.log("Images seeded successfully");
-//   return inserted;
+//     await Image.deleteMany();
+//     console.log("Deleting images...");
+//     const count = 30;
+//     const images = Array.from({ length: count }, (_, i) => ({
+//         secure_url: `https://picsum.photos/seed/hotel-${i}/400/300`,
+//         public_id: `seed/hotel-${i}-${faker.string.alphanumeric(8)}`,
+//     }));
+//     const inserted = await Image.insertMany(images);
+//     console.log("Images seeded successfully");
+//     return inserted;
 // };
 
 const seedUser = async () => {
@@ -201,7 +247,8 @@ const LocalHotel = [
 
 const seedHotel = async () => {
     await Hotel.deleteMany();
-    console.log("Deleting hotels...");
+    await Image.deleteMany();
+    console.log("Deleting hotels and images...");
     const hotelTypes = ["hotel", "motel", "guest-house"] as const;
     const allAmenities = ["wifi", "parking", "pool", "gym", "breakfast", "ac"];
     const fakeHotel = Array.from({ length: 10 }, (_, i) => ({
@@ -209,18 +256,31 @@ const seedHotel = async () => {
         description: faker.company.catchPhrase(),
         address: faker.location.streetAddress(),
         price: faker.number.int({ min: 80, max: 999 }),
-        amenities: faker.helpers.arrayElements(allAmenities),
         city: faker.location.city(),
         country: faker.location.country(),
         rating: faker.number.int({ min: 1, max: 10 }),
         star: faker.number.int({ min: 1, max: 5 }),
         type: faker.helpers.arrayElement(hotelTypes),
-
     }));
     const hotels = [...LocalHotel, ...fakeHotel];
 
     const inserted = await Hotel.insertMany(hotels);
-    console.log("Hotels seeded successfully");
+    const hotelImagePaths = await getLocalImagePaths("hotels");
+    if (hotelImagePaths.length === 0) {
+        throw new Error(
+            `No local images found. Add image files (.jpg, .png, .webp, .gif) to: ${path.join(IMAGES_BASE, "hotels")}`
+        );
+    }
+    console.log("Uploading hotel images from local files to Cloudinary...");
+    for (let i = 0; i < inserted.length; i++) {
+        const hotel = inserted[i];
+        const imagePath = hotelImagePaths[i % hotelImagePaths.length];
+        const { secure_url, public_id } = await uploadLocalImageToCloudinary(imagePath);
+        const [imageDoc] = await Image.create([{ secure_url, public_id }]);
+        hotel.photo = imageDoc._id;
+        await hotel.save();
+    }
+    console.log("Hotels seeded successfully with images");
     return inserted;
 };
 
@@ -239,7 +299,22 @@ const seedRoom = async (
         hotelId: faker.helpers.arrayElement(hotels)._id,
     }));
     const inserted = await Room.insertMany(rooms);
-    console.log("Rooms seeded successfully");
+    const roomImagePaths = await getLocalImagePaths("rooms");
+    if (roomImagePaths.length === 0) {
+        throw new Error(
+            `No local images found. Add image files (.jpg, .png, .webp, .gif) to: ${path.join(IMAGES_BASE, "rooms")}`
+        );
+    }
+    console.log("Uploading room images from local files to Cloudinary...");
+    for (let i = 0; i < inserted.length; i++) {
+        const room = inserted[i];
+        const imagePath = roomImagePaths[i % roomImagePaths.length];
+        const { secure_url, public_id } = await uploadLocalImageToCloudinary(imagePath);
+        const [imageDoc] = await Image.create([{ secure_url, public_id }]);
+        room.photo = imageDoc._id;
+        await room.save();
+    }
+    console.log("Rooms seeded successfully with images");
     return inserted;
 };
 
