@@ -104,37 +104,38 @@ export const getRoomsByHotelIdService = async (
     // ----------------check room avaliable ---------
 
     if (start && end) {
-        pipeline.push({
-            $lookup: {
-                from: "bookings",
-                let: { roomId: "$_id" },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    {
-                                        $eq: ['$roomId', "$$roomId"]
-                                    },
-                                    {
-                                        $in: ["$status", ["CONFIRMED", "STAYED"]]
-                                    },
-                                    {
-                                        $lt: ["$checkIn", end]
-                                    },
-                                    {
-                                        $gt: ['$checkOut', start]
-                                    }
-                                ]
+        pipeline.push(
+            {
+                $lookup: {
+                    from: "bookings",
+                    let: { roomId: "$_id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        {
+                                            $eq: ['$roomId', "$$roomId"]
+                                        },
+                                        {
+                                            $in: ["$status", ["CONFIRMED", "STAYED"]]
+                                        },
+                                        {
+                                            $lt: ["$checkIn", end]
+                                        },
+                                        {
+                                            $gt: ['$checkOut', start]
+                                        }
+                                    ]
+                                }
                             }
+                        },
+                        {
+                            $project: { quantity: 1 }
                         }
-                    },
-                    {
-                        $project: { quantity: 1 }
-                    }
-                ], as: "overlappingBookings"
-            }
-        },
+                    ], as: "overlappingBookings"
+                }
+            },
             {
                 $addFields: {
                     bookedCount: { $ifNull: [{ $sum: "$overlappingBookings.quantity" }, 0] }
@@ -151,7 +152,20 @@ export const getRoomsByHotelIdService = async (
                 $match: {
                     avaliableRooms: { $gt: 0 }
                 }
+            },
+            {
+                $lookup: {
+                    from: "images",
+                    localField: "photo",
+                    foreignField: "_id",
+                    as: "photo"
+
+                }
+            },
+            {
+                $unwind: "$photo"
             }
+
 
         )
     }
@@ -159,7 +173,7 @@ export const getRoomsByHotelIdService = async (
     const rooms = await Room.aggregate(pipeline)
 
 
-    if (!rooms) {
+    if (!rooms || rooms.length === 0) {
         throw new NotFoundError("Rooms not found.")
     }
 
